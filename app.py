@@ -16,7 +16,7 @@ st.title("FRIDAY: Online")
 # Setup AI with a secure secret key
 if "GEMINI_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
 else:
     st.error("Missing API Key. Please configure it in Streamlit settings.")
     st.stop()
