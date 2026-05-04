@@ -1,46 +1,49 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 
 # Page Config
-st.set_page_config(page_title="FRIDAY v1", page_icon="⚙️")
+st.set_page_config(page_title="FRIDAY v2.5 Pro", page_icon="⚡")
 
-# Custom CSS for the "Iron Man" look
 st.markdown("""
     <style>
-    .stApp { background-color: #0e1117; color: #5ce1e6; }
+    .stApp { background-color: #050a14; color: #00d4ff; }
+    .stChatMessage { border-radius: 15px; border: 1px solid #00d4ff22; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("FRIDAY: Online")
+st.title("FRIDAY: v2.5 Pro Online")
 
-# Setup AI with a secure secret key
+# Setup the New 2026 Client
 if "GEMINI_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_KEY"])
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    client = genai.Client(api_key=st.secrets["GEMINI_KEY"])
 else:
-    st.error("Missing API Key. Please configure it in Streamlit settings.")
+    st.error("Missing API Key in Streamlit Secrets.")
     st.stop()
 
-# Initialize Chat History
+# Initialize Memory
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display Chat History
+# Display History
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
 
 # User Input
-if prompt := st.chat_input("What's next, Boss?"):
+if prompt := st.chat_input("Directives, Boss?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.write(prompt)
 
-    # Generate FRIDAY's response
+    # FRIDAY Response using Gemini 2.5 Flash
     with st.chat_message("assistant"):
-        response = model.generate_content(
-            f"System Instruction: You are FRIDAY, the advanced AI from Iron Man. Be witty, efficient, and call the user Boss. User says: {prompt}"
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            config=genai.types.GenerateContentConfig(
+                system_instruction="You are FRIDAY. You are a high-level AI assistant. Be witty, direct, and call the user 'Boss'.",
+                temperature=0.7
+            ),
+            contents=prompt
         )
         st.write(response.text)
         st.session_state.messages.append({"role": "assistant", "content": response.text})
-      
