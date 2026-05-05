@@ -4,6 +4,10 @@ from google import genai
 # Page Config
 st.set_page_config(page_title="FRIDAY v2.5 Pro", page_icon="⚡")
 
+# Force a full-screen mobile experience
+st.markdown('<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">', unsafe_allow_html=True)
+st.markdown('<meta name="mobile-web-app-capable" content="yes">', unsafe_allow_html=True)
+
 st.markdown("""
     <style>
     .stApp { background-color: #050a14; color: #00d4ff; }
