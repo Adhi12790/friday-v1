@@ -1,3 +1,14 @@
+# Custom Header for App Identity
+st.markdown(f"""
+    <head>
+        <link rel="apple-touch-icon" href="logo.png">
+        <link rel="icon" href="logo.png">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    </head>
+""", unsafe_allow_html=True)
+
+
 import streamlit as st
 from google import genai
 
