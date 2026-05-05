@@ -1,24 +1,21 @@
-# Custom Header for App Identity
+import streamlit as st
+from google import genai
+
+# 1. MUST BE FIRST: Page Config
+st.set_page_config(page_title="FRIDAY v2.5 Pro", page_icon="⚡")
+
+# 2. Identity & Mobile Meta Tags
 st.markdown(f"""
     <head>
         <link rel="apple-touch-icon" href="logo.png">
         <link rel="icon" href="logo.png">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     </head>
 """, unsafe_allow_html=True)
 
-
-import streamlit as st
-from google import genai
-
-# Page Config
-st.set_page_config(page_title="FRIDAY v2.5 Pro", page_icon="⚡")
-
-# Force a full-screen mobile experience
-st.markdown('<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">', unsafe_allow_html=True)
-st.markdown('<meta name="mobile-web-app-capable" content="yes">', unsafe_allow_html=True)
-
+# 3. Visual Styling
 st.markdown("""
     <style>
     .stApp { background-color: #050a14; color: #00d4ff; }
@@ -28,7 +25,7 @@ st.markdown("""
 
 st.title("FRIDAY: v2.5 Pro Online")
 
-# Setup the New 2026 Client
+# 4. AI Logic Setup
 if "GEMINI_KEY" in st.secrets:
     client = genai.Client(api_key=st.secrets["GEMINI_KEY"])
 else:
@@ -50,7 +47,7 @@ if prompt := st.chat_input("Directives, Boss?"):
     with st.chat_message("user"):
         st.write(prompt)
 
-    # FRIDAY Response using Gemini 2.5 Flash
+    # FRIDAY Response
     with st.chat_message("assistant"):
         response = client.models.generate_content(
             model="gemini-2.5-flash",
