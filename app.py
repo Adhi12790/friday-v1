@@ -1,61 +1,78 @@
 import streamlit as st
 from google import genai
+import datetime
 
-# 1. MUST BE FIRST: Page Config
-st.set_page_config(page_title="FRIDAY v2.5 Pro", page_icon="⚡")
+# 1. Page & HUD Setup
+st.set_page_config(page_title="FRIDAY v1.5 Vocal", page_icon="🔊")
 
-# 2. Identity & Mobile Meta Tags
-st.markdown(f"""
-    <head>
-        <link rel="apple-touch-icon" href="logo.png">
-        <link rel="icon" href="logo.png">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    </head>
-""", unsafe_allow_html=True)
-
-# 3. Visual Styling
 st.markdown("""
     <style>
     .stApp { background-color: #050a14; color: #00d4ff; }
-    .stChatMessage { border-radius: 15px; border: 1px solid #00d4ff22; }
+    .stChatMessage { border-radius: 15px; border-left: 3px solid #00d4ff; background: rgba(0, 212, 255, 0.05); }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-st.title("FRIDAY: v2.5 Pro Online")
+# --- JAVASCRIPT FOR VOICE OUTPUT ---
+def speak_text(text):
+    # This script triggers the phone's native TTS
+    js_code = f"""
+    <script>
+    var msg = new SpeechSynthesisUtterance();
+    msg.text = "{text.replace('"', '')}";
+    msg.rate = 1.1; 
+    msg.pitch = 1.2;
+    window.speechSynthesis.speak(msg);
+    </script>
+    """
+    st.components.v1.html(js_code, height=0)
 
-# 4. AI Logic Setup
+st.title("F.R.I.D.A.Y. Vocal Interface")
+
+# 2. Date & Time Data
+now = datetime.datetime.now()
+current_time = now.strftime("%I:%M %p")
+current_date = now.strftime("%B %d, %Y")
+
+# 3. AI Logic Setup
 if "GEMINI_KEY" in st.secrets:
     client = genai.Client(api_key=st.secrets["GEMINI_KEY"])
 else:
-    st.error("Missing API Key in Streamlit Secrets.")
+    st.error("Missing API Key.")
     st.stop()
 
-# Initialize Memory
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display History
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
+# 4. Voice Input (Microphone)
+audio_input = st.audio_input("Speak to FRIDAY")
 
-# User Input
-if prompt := st.chat_input("Directives, Boss?"):
+# 5. Logical Processing
+prompt = st.chat_input("Directives, Boss?")
+
+if audio_input:
+    # Note: Transcription would happen here; for now we use a status trigger
+    prompt = "Friday, give me a verbal status report."
+
+if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
-        st.write(prompt)
+        st.markdown(prompt)
 
-    # FRIDAY Response
     with st.chat_message("assistant"):
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             config=genai.types.GenerateContentConfig(
-                system_instruction="You are FRIDAY. You are a high-level AI assistant. Be witty, direct, and call the user 'Boss'.",
-                temperature=0.7
+                system_instruction=f"You are FRIDAY. Today is {current_date}, {current_time}. Be witty, brief (keep responses under 3 sentences for better speech), and call the user Boss.",
+                tools=[{"google_search": {}}],
+                temperature=0.4
             ),
-            contents=prompt
+            contents=[m["content"] for m in st.session_state.messages]
         )
-        st.write(response.text)
-        st.session_state.messages.append({"role": "assistant", "content": response.text})
+        
+        output_text = response.text
+        st.markdown(output_text)
+        
+        # TRIGGER THE VOICE
+        speak_text(output_text)
+        
+        st.session_state.messages.append({"role": "assistant", "content": output_text})
